@@ -35,3 +35,4 @@
 ## Workflow Rules
 - **Always commit and push after making changes** — use the remote at origin
 - Run `flutter analyze` before committing to catch errors
+- **Keep README.md up to date** — when adding features, changing gameplay mechanics, or modifying project structure, update README.md to reflect the changes
