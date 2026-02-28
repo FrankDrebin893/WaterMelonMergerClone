@@ -40,7 +40,7 @@ class ContainerWall extends BodyComponent {
 
     // Container background
     final bgPaint = Paint()
-      ..color = const Color(0xFF1A1A2E)
+      ..color = const Color(0xFFFAF3E0)
       ..style = PaintingStyle.fill;
     canvas.drawRect(
       const Rect.fromLTRB(-halfW, -halfH, halfW, halfH),
@@ -49,8 +49,8 @@ class ContainerWall extends BodyComponent {
 
     // Wall border
     final wallPaint = Paint()
-      ..color = const Color(0xFF4A90D9)
-      ..strokeWidth = 0.15
+      ..color = const Color(0xFFB8860B)
+      ..strokeWidth = 0.18
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 

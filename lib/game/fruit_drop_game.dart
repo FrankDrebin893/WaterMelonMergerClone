@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/foundation.dart';
 
+import 'components/background_component.dart';
 import 'components/container_wall.dart';
 import 'components/fruit_body.dart';
 import 'components/game_over_line.dart';
@@ -21,6 +22,7 @@ class FruitDropWorld extends Forge2DWorld {
   Future<void> onLoad() async {
     await super.onLoad();
 
+    add(BackgroundComponent());
     add(ContainerWall());
     add(GameOverLine());
     addAll([spawnManager, mergeManager, scoreManager]);
