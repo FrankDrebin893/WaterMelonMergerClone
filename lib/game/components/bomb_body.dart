@@ -41,6 +41,8 @@ class BombBody extends BodyComponent with ContactCallbacks {
 
   @override
   void beginContact(Object other, Contact contact) {
+    // Ignore sensor contacts (e.g. the game-over line at the top)
+    if (contact.fixtureA.isSensor || contact.fixtureB.isSensor) return;
     if (!pendingExplosion) {
       pendingExplosion = true;
       _mergeManager?.enqueueBomb(this);
