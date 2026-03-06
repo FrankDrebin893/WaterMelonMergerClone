@@ -7,22 +7,24 @@ import '../data/fruit_type.dart';
 
 Color _withAlpha(Color c, double a) => c.withValues(alpha: a.clamp(0.0, 1.0));
 
+enum FaceExpression { normal, scared }
+
 abstract class FruitPainter {
   static void draw(Canvas canvas, FruitType type, double radius,
-      {double opacity = 1.0}) {
+      {double opacity = 1.0, FaceExpression expression = FaceExpression.normal}) {
     switch (type) {
       case FruitType.berry:
-        _drawBerry(canvas, radius, opacity);
+        _drawBerry(canvas, radius, opacity, expression);
       case FruitType.raspberry:
-        _drawRaspberry(canvas, radius, opacity);
+        _drawRaspberry(canvas, radius, opacity, expression);
       case FruitType.orange:
-        _drawOrange(canvas, radius, opacity);
+        _drawOrange(canvas, radius, opacity, expression);
       case FruitType.apple:
-        _drawApple(canvas, radius, opacity);
+        _drawApple(canvas, radius, opacity, expression);
       case FruitType.coconut:
-        _drawCoconut(canvas, radius, opacity);
+        _drawCoconut(canvas, radius, opacity, expression);
       case FruitType.watermelon:
-        _drawWatermelon(canvas, radius, opacity);
+        _drawWatermelon(canvas, radius, opacity, expression);
     }
   }
 
@@ -59,7 +61,12 @@ abstract class FruitPainter {
   }
 
   static void _drawFace(Canvas canvas, double radius, double opacity,
-      {double yOffset = 0.08}) {
+      {double yOffset = 0.08, FaceExpression expression = FaceExpression.normal}) {
+    if (expression == FaceExpression.scared) {
+      _drawScaredFace(canvas, radius, opacity, yOffset: yOffset);
+      return;
+    }
+
     final eyeR = radius * 0.075;
     final eyeY = radius * yOffset;
 
@@ -110,9 +117,89 @@ abstract class FruitPainter {
         cheekPaint);
   }
 
+  static void _drawScaredFace(Canvas canvas, double radius, double opacity,
+      {double yOffset = 0.08}) {
+    final eyeR = radius * 0.09;
+    final eyeY = radius * yOffset;
+
+    // Wide white sclera (eyes wide open with fear)
+    canvas.drawCircle(Offset(-radius * 0.2, eyeY), eyeR * 1.35,
+        Paint()..color = _withAlpha(const Color(0xFFFFFFFF), 0.95 * opacity));
+    canvas.drawCircle(Offset(radius * 0.2, eyeY), eyeR * 1.35,
+        Paint()..color = _withAlpha(const Color(0xFFFFFFFF), 0.95 * opacity));
+
+    // Small pupils looking upward (scared glance)
+    final pupilPaint =
+        Paint()..color = _withAlpha(const Color(0xFF1A1A1A), opacity);
+    canvas.drawCircle(
+        Offset(-radius * 0.2, eyeY - eyeR * 0.38), eyeR * 0.65, pupilPaint);
+    canvas.drawCircle(
+        Offset(radius * 0.2, eyeY - eyeR * 0.38), eyeR * 0.65, pupilPaint);
+
+    // Raised arched brows (surprise/fear)
+    final browPaint = Paint()
+      ..color = _withAlpha(const Color(0xFF1A1A1A), opacity)
+      ..strokeWidth = radius * 0.055
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCenter(
+          center: Offset(-radius * 0.2, eyeY - eyeR * 2.1),
+          width: eyeR * 2.8,
+          height: eyeR * 1.5),
+      pi + 0.4,
+      pi - 0.8,
+      false,
+      browPaint,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(
+          center: Offset(radius * 0.2, eyeY - eyeR * 2.1),
+          width: eyeR * 2.8,
+          height: eyeR * 1.5),
+      pi + 0.4,
+      pi - 0.8,
+      false,
+      browPaint,
+    );
+
+    // Open "O" mouth (shocked)
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(0, radius * (yOffset + 0.22)),
+        width: radius * 0.2,
+        height: radius * 0.16,
+      ),
+      Paint()..color = _withAlpha(const Color(0xFF1A1A1A), opacity),
+    );
+
+    // Blue-ish cheeks (cold sweat)
+    final cheekPaint =
+        Paint()..color = _withAlpha(const Color(0xFF88AAFF), 0.45 * opacity);
+    canvas.drawCircle(
+        Offset(-radius * 0.33, radius * (yOffset + 0.06)),
+        radius * 0.1,
+        cheekPaint);
+    canvas.drawCircle(
+        Offset(radius * 0.33, radius * (yOffset + 0.06)),
+        radius * 0.1,
+        cheekPaint);
+
+    // Sweat drop on side
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(radius * 0.49, eyeY - eyeR * 0.4),
+        width: radius * 0.075,
+        height: radius * 0.115,
+      ),
+      Paint()..color = _withAlpha(const Color(0xFF99CCFF), 0.75 * opacity),
+    );
+  }
+
   // ── Berry ──────────────────────────────────────────────────────────────────
 
-  static void _drawBerry(Canvas canvas, double radius, double opacity) {
+  static void _drawBerry(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     final gradient = ui.Gradient.radial(
       Offset(-radius * 0.3, -radius * 0.3),
       radius * 1.3,
@@ -141,13 +228,14 @@ abstract class FruitPainter {
     );
 
     _drawHighlight(canvas, radius, opacity);
-    _drawFace(canvas, radius, opacity, yOffset: 0.1);
+    _drawFace(canvas, radius, opacity, yOffset: 0.1, expression: expression);
     _drawOutline(canvas, radius, opacity);
   }
 
   // ── Raspberry ──────────────────────────────────────────────────────────────
 
-  static void _drawRaspberry(Canvas canvas, double radius, double opacity) {
+  static void _drawRaspberry(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     canvas.drawCircle(
       Offset.zero,
       radius,
@@ -198,13 +286,14 @@ abstract class FruitPainter {
     );
 
     _drawHighlight(canvas, radius, opacity);
-    _drawFace(canvas, radius, opacity, yOffset: 0.05);
+    _drawFace(canvas, radius, opacity, yOffset: 0.05, expression: expression);
     _drawOutline(canvas, radius, opacity);
   }
 
   // ── Orange ─────────────────────────────────────────────────────────────────
 
-  static void _drawOrange(Canvas canvas, double radius, double opacity) {
+  static void _drawOrange(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     final gradient = ui.Gradient.radial(
       Offset(-radius * 0.28, -radius * 0.28),
       radius * 1.25,
@@ -257,13 +346,14 @@ abstract class FruitPainter {
         leafPath, Paint()..color = _withAlpha(const Color(0xFF388E3C), opacity));
 
     _drawHighlight(canvas, radius, opacity);
-    _drawFace(canvas, radius, opacity, yOffset: 0.1);
+    _drawFace(canvas, radius, opacity, yOffset: 0.1, expression: expression);
     _drawOutline(canvas, radius, opacity);
   }
 
   // ── Apple ──────────────────────────────────────────────────────────────────
 
-  static void _drawApple(Canvas canvas, double radius, double opacity) {
+  static void _drawApple(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     final gradient = ui.Gradient.radial(
       Offset(-radius * 0.3, -radius * 0.28),
       radius * 1.28,
@@ -318,13 +408,14 @@ abstract class FruitPainter {
     );
 
     _drawHighlight(canvas, radius, opacity);
-    _drawFace(canvas, radius, opacity, yOffset: 0.08);
+    _drawFace(canvas, radius, opacity, yOffset: 0.08, expression: expression);
     _drawOutline(canvas, radius, opacity);
   }
 
   // ── Coconut ────────────────────────────────────────────────────────────────
 
-  static void _drawCoconut(Canvas canvas, double radius, double opacity) {
+  static void _drawCoconut(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     final gradient = ui.Gradient.radial(
       Offset(-radius * 0.3, -radius * 0.3),
       radius * 1.2,
@@ -350,54 +441,59 @@ abstract class FruitPainter {
       );
     }
 
-    // Three oval marks forming an inherent face
-    final markPaint =
-        Paint()..color = _withAlpha(const Color(0xFF3E2723), opacity);
-    final eyeR = radius * 0.14;
-    canvas.drawOval(
-      Rect.fromCenter(
-          center: Offset(-radius * 0.28, -radius * 0.15),
-          width: eyeR * 1.3,
-          height: eyeR * 1.7),
-      markPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-          center: Offset(radius * 0.28, -radius * 0.15),
-          width: eyeR * 1.3,
-          height: eyeR * 1.7),
-      markPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-          center: Offset(0, radius * 0.22),
-          width: eyeR * 1.1,
-          height: eyeR * 1.4),
-      markPaint,
-    );
+    if (expression == FaceExpression.scared) {
+      // Scared state overrides the natural coconut face
+      _drawScaredFace(canvas, radius, opacity, yOffset: 0.08);
+    } else {
+      // Three oval marks forming an inherent face
+      final markPaint =
+          Paint()..color = _withAlpha(const Color(0xFF3E2723), opacity);
+      final eyeR = radius * 0.14;
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(-radius * 0.28, -radius * 0.15),
+            width: eyeR * 1.3,
+            height: eyeR * 1.7),
+        markPaint,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(radius * 0.28, -radius * 0.15),
+            width: eyeR * 1.3,
+            height: eyeR * 1.7),
+        markPaint,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(0, radius * 0.22),
+            width: eyeR * 1.1,
+            height: eyeR * 1.4),
+        markPaint,
+      );
 
-    // Smile below the marks
-    canvas.drawArc(
-      Rect.fromCenter(
-        center: Offset(0, radius * 0.52),
-        width: radius * 0.45,
-        height: radius * 0.22,
-      ),
-      0.1,
-      pi - 0.2,
-      false,
-      Paint()
-        ..color = _withAlpha(const Color(0xFF3E2723), opacity)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = radius * 0.06
-        ..strokeCap = StrokeCap.round,
-    );
+      // Smile below the marks
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: Offset(0, radius * 0.52),
+          width: radius * 0.45,
+          height: radius * 0.22,
+        ),
+        0.1,
+        pi - 0.2,
+        false,
+        Paint()
+          ..color = _withAlpha(const Color(0xFF3E2723), opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = radius * 0.06
+          ..strokeCap = StrokeCap.round,
+      );
 
-    // Rosy cheeks
-    canvas.drawCircle(Offset(-radius * 0.5, radius * 0.35), radius * 0.1,
-        Paint()..color = _withAlpha(const Color(0xFFFF69B4), 0.32 * opacity));
-    canvas.drawCircle(Offset(radius * 0.5, radius * 0.35), radius * 0.1,
-        Paint()..color = _withAlpha(const Color(0xFFFF69B4), 0.32 * opacity));
+      // Rosy cheeks
+      canvas.drawCircle(Offset(-radius * 0.5, radius * 0.35), radius * 0.1,
+          Paint()..color = _withAlpha(const Color(0xFFFF69B4), 0.32 * opacity));
+      canvas.drawCircle(Offset(radius * 0.5, radius * 0.35), radius * 0.1,
+          Paint()..color = _withAlpha(const Color(0xFFFF69B4), 0.32 * opacity));
+    }
 
     _drawHighlight(canvas, radius, opacity);
     _drawOutline(canvas, radius, opacity);
@@ -405,7 +501,8 @@ abstract class FruitPainter {
 
   // ── Watermelon ─────────────────────────────────────────────────────────────
 
-  static void _drawWatermelon(Canvas canvas, double radius, double opacity) {
+  static void _drawWatermelon(Canvas canvas, double radius, double opacity,
+      FaceExpression expression) {
     // Green rind
     final rindGradient = ui.Gradient.radial(
       Offset(-radius * 0.2, -radius * 0.2),
@@ -471,7 +568,7 @@ abstract class FruitPainter {
     }
 
     _drawHighlight(canvas, fleshR, opacity);
-    _drawFace(canvas, fleshR, opacity, yOffset: 0.08);
+    _drawFace(canvas, fleshR, opacity, yOffset: 0.08, expression: expression);
     _drawOutline(canvas, radius, opacity);
   }
 }

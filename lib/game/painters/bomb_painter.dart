@@ -28,46 +28,77 @@ abstract class BombPainter {
       Paint()..color = _withAlpha(const Color(0xFFFFFFFF), 0.38 * opacity),
     );
 
-    // Angry brows (slanted inward)
+    // Excited brows (arched upward — happy!)
     final browPaint = Paint()
       ..color = _withAlpha(const Color(0xFFFFFFFF), 0.9 * opacity)
       ..strokeWidth = radius * 0.08
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(-radius * 0.38, -radius * 0.2),
-      Offset(-radius * 0.1, -radius * 0.08),
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: Offset(-radius * 0.22, -radius * 0.22),
+        width: radius * 0.38,
+        height: radius * 0.22,
+      ),
+      pi + 0.35,
+      pi - 0.7,
+      false,
       browPaint,
     );
-    canvas.drawLine(
-      Offset(radius * 0.1, -radius * 0.08),
-      Offset(radius * 0.38, -radius * 0.2),
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: Offset(radius * 0.22, -radius * 0.22),
+        width: radius * 0.38,
+        height: radius * 0.22,
+      ),
+      pi + 0.35,
+      pi - 0.7,
+      false,
       browPaint,
     );
 
-    // Eyes
+    // Big excited eyes
     final eyePaint =
         Paint()..color = _withAlpha(const Color(0xFFFFFFFF), opacity);
     canvas.drawCircle(
-        Offset(-radius * 0.19, radius * 0.1), radius * 0.09, eyePaint);
+        Offset(-radius * 0.2, radius * 0.08), radius * 0.11, eyePaint);
     canvas.drawCircle(
-        Offset(radius * 0.19, radius * 0.1), radius * 0.09, eyePaint);
+        Offset(radius * 0.2, radius * 0.08), radius * 0.11, eyePaint);
+    // Eye shine sparkles
+    final shinePaint =
+        Paint()..color = _withAlpha(const Color(0xFFFFFF88), 0.9 * opacity);
+    canvas.drawCircle(
+        Offset(-radius * 0.16, radius * 0.04), radius * 0.04, shinePaint);
+    canvas.drawCircle(
+        Offset(radius * 0.24, radius * 0.04), radius * 0.04, shinePaint);
 
-    // Frown
+    // Wide excited grin
     canvas.drawArc(
       Rect.fromCenter(
-        center: Offset(0, radius * 0.42),
-        width: radius * 0.4,
-        height: radius * 0.2,
+        center: Offset(0, radius * 0.36),
+        width: radius * 0.52,
+        height: radius * 0.3,
       ),
-      pi + 0.2, // bottom arc = frown
-      pi - 0.4,
+      0.05,
+      pi - 0.1,
       false,
       Paint()
         ..color = _withAlpha(const Color(0xFFFFFFFF), opacity)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = radius * 0.07
+        ..strokeWidth = radius * 0.08
         ..strokeCap = StrokeCap.round,
+    );
+
+    // Pink excited cheeks
+    canvas.drawCircle(
+      Offset(-radius * 0.38, radius * 0.28),
+      radius * 0.1,
+      Paint()..color = _withAlpha(const Color(0xFFFF88AA), 0.45 * opacity),
+    );
+    canvas.drawCircle(
+      Offset(radius * 0.38, radius * 0.28),
+      radius * 0.1,
+      Paint()..color = _withAlpha(const Color(0xFFFF88AA), 0.45 * opacity),
     );
 
     // Fuse (curving out of top)

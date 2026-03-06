@@ -101,6 +101,7 @@ class MergeManager extends Component {
         final impulse = direction * strength;
         impulse.x *= 1.4;
         child.body.applyLinearImpulse(impulse);
+        child.scare(0.7);
       }
     }
   }
@@ -127,6 +128,7 @@ class MergeManager extends Component {
         final impulse = direction * (t * 85.0);
         impulse.x *= 1.3;
         child.body.applyLinearImpulse(impulse);
+        child.scare(1.5);
       }
     }
   }

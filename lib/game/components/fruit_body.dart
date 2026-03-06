@@ -14,6 +14,7 @@ class FruitBody extends BodyComponent with ContactCallbacks {
   final FruitType fruitType;
   final Vector2 _initialPosition;
   bool pendingRemoval = false;
+  double _scaredTimer = 0;
   MergeManager? _mergeManager;
 
   @override
@@ -40,6 +41,16 @@ class FruitBody extends BodyComponent with ContactCallbacks {
     _mergeManager = w?.children.whereType<MergeManager>().firstOrNull;
   }
 
+  void scare(double duration) {
+    _scaredTimer = duration;
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (_scaredTimer > 0) _scaredTimer = (_scaredTimer - dt).clamp(0.0, 100.0);
+  }
+
   @override
   void beginContact(Object other, Contact contact) {
     if (other is FruitBody &&
@@ -54,7 +65,8 @@ class FruitBody extends BodyComponent with ContactCallbacks {
 
   @override
   void render(Canvas canvas) {
-    FruitPainter.draw(canvas, fruitType, fruitType.radius);
+    final expr = _scaredTimer > 0 ? FaceExpression.scared : FaceExpression.normal;
+    FruitPainter.draw(canvas, fruitType, fruitType.radius, expression: expr);
   }
 
   @override
