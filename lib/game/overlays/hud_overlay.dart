@@ -12,7 +12,7 @@ class HudOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -38,6 +38,68 @@ class HudOverlay extends StatelessWidget {
                 );
               },
             ),
+
+            // Bomb button
+            ValueListenableBuilder<int>(
+              valueListenable: game.bombCountNotifier,
+              builder: (context, count, _) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: game.bombActiveNotifier,
+                  builder: (context, active, _) {
+                    final available = count > 0 && !active;
+                    return GestureDetector(
+                      onTap: available ? () => game.activateBomb() : null,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? const Color(0xFFFF6600)
+                              : available
+                                  ? Colors.black54
+                                  : Colors.black26,
+                          borderRadius: BorderRadius.circular(20),
+                          border: active
+                              ? Border.all(
+                                  color: const Color(0xFFFFDD00), width: 2.5)
+                              : null,
+                          boxShadow: active
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFFF6600)
+                                        .withValues(alpha: 0.6),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  )
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('💣',
+                                style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 4),
+                            Text(
+                              active ? 'READY' : '×$count',
+                              style: TextStyle(
+                                color: available || active
+                                    ? Colors.white
+                                    : Colors.white38,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+
             // Next fruit indicator
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

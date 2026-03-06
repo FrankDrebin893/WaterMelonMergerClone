@@ -5,6 +5,7 @@ import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flutter/foundation.dart';
 
 import 'components/background_component.dart';
+import 'components/bomb_body.dart';
 import 'components/container_wall.dart';
 import 'components/fruit_body.dart';
 import 'components/game_over_line.dart';
@@ -37,9 +38,13 @@ class FruitDropGame extends Forge2DGame<FruitDropWorld> with PanDetector {
           gravity: Vector2(0, 15.0),
         );
 
+  static const int _startingBombs = 3;
+
   final ValueNotifier<int> scoreNotifier = ValueNotifier(0);
   final ValueNotifier<FruitType> nextFruitNotifier =
       ValueNotifier(FruitType.berry);
+  final ValueNotifier<int> bombCountNotifier = ValueNotifier(_startingBombs);
+  final ValueNotifier<bool> bombActiveNotifier = ValueNotifier(false);
 
   bool _gameActive = true;
 
@@ -59,6 +64,7 @@ class FruitDropGame extends Forge2DGame<FruitDropWorld> with PanDetector {
     if (_gameActive && world.isMounted) {
       scoreNotifier.value = scoreManager.score;
       nextFruitNotifier.value = spawnManager.nextFruit;
+      bombActiveNotifier.value = spawnManager.isBombNext;
     }
   }
 
@@ -85,6 +91,14 @@ class FruitDropGame extends Forge2DGame<FruitDropWorld> with PanDetector {
     spawnManager.onPointerMove(worldPos.x);
   }
 
+  void activateBomb() {
+    if (!_gameActive) return;
+    if (bombCountNotifier.value <= 0) return;
+    if (spawnManager.isBombNext) return;
+    bombCountNotifier.value--;
+    spawnManager.activateBomb();
+  }
+
   void onGameOver() {
     if (!_gameActive) return;
     _gameActive = false;
@@ -105,15 +119,19 @@ class FruitDropGame extends Forge2DGame<FruitDropWorld> with PanDetector {
     overlays.remove('gameOver');
     resumeEngine();
 
-    final fruits = world.children.whereType<FruitBody>().toList();
-    for (final fruit in fruits) {
+    for (final fruit in world.children.whereType<FruitBody>().toList()) {
       fruit.removeFromParent();
+    }
+    for (final bomb in world.children.whereType<BombBody>().toList()) {
+      bomb.removeFromParent();
     }
 
     mergeManager.clear();
     scoreManager.reset();
     spawnManager.enabled = true;
     spawnManager.previewX = null;
+    spawnManager.deactivateBomb();
+    bombCountNotifier.value = _startingBombs;
     _gameActive = true;
   }
 }

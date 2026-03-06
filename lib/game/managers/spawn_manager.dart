@@ -4,10 +4,12 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
+import '../components/bomb_body.dart';
 import '../components/container_wall.dart';
 import '../components/fruit_body.dart';
 import '../data/fruit_type.dart';
 import '../fruit_drop_game.dart';
+import '../painters/bomb_painter.dart';
 import '../painters/fruit_painter.dart';
 
 class SpawnManager extends Component with HasWorldReference<FruitDropWorld> {
@@ -26,6 +28,9 @@ class SpawnManager extends Component with HasWorldReference<FruitDropWorld> {
   bool _ready = true;
   double _cooldown = 0;
   bool enabled = true;
+  bool _bombNext = false;
+
+  bool get isBombNext => _bombNext;
 
   SpawnManager() {
     nextFruit = _randomFruit();
@@ -35,11 +40,20 @@ class SpawnManager extends Component with HasWorldReference<FruitDropWorld> {
     return _spawnPool[_random.nextInt(_spawnPool.length)];
   }
 
+  void activateBomb() {
+    _bombNext = true;
+  }
+
+  void deactivateBomb() {
+    _bombNext = false;
+  }
+
   void onPointerMove(double worldX) {
     if (!enabled) return;
+    final r = _bombNext ? BombBody.radius : nextFruit.radius;
     previewX = worldX.clamp(
-      -ContainerWall.width / 2 + nextFruit.radius + 0.1,
-      ContainerWall.width / 2 - nextFruit.radius - 0.1,
+      -ContainerWall.width / 2 + r + 0.1,
+      ContainerWall.width / 2 - r - 0.1,
     );
   }
 
@@ -48,11 +62,15 @@ class SpawnManager extends Component with HasWorldReference<FruitDropWorld> {
     _ready = false;
     _cooldown = 0.5;
 
-    final spawnY = -ContainerWall.height / 2 - nextFruit.radius - 0.5;
-    final spawnPos = Vector2(previewX!, spawnY);
-    world.add(FruitBody(fruitType: nextFruit, position: spawnPos));
-
-    nextFruit = _randomFruit();
+    if (_bombNext) {
+      final spawnY = -ContainerWall.height / 2 - BombBody.radius - 0.5;
+      world.add(BombBody(position: Vector2(previewX!, spawnY)));
+      _bombNext = false;
+    } else {
+      final spawnY = -ContainerWall.height / 2 - nextFruit.radius - 0.5;
+      world.add(FruitBody(fruitType: nextFruit, position: Vector2(previewX!, spawnY)));
+      nextFruit = _randomFruit();
+    }
   }
 
   @override
@@ -67,22 +85,38 @@ class SpawnManager extends Component with HasWorldReference<FruitDropWorld> {
   void render(Canvas canvas) {
     if (previewX == null || !enabled) return;
 
-    final spawnY = -ContainerWall.height / 2 - nextFruit.radius - 0.5;
+    if (_bombNext) {
+      final spawnY = -ContainerWall.height / 2 - BombBody.radius - 0.5;
+      canvas.save();
+      canvas.translate(previewX!, spawnY);
+      BombPainter.draw(canvas, BombBody.radius,
+          opacity: _ready ? 0.55 : 0.2);
+      canvas.restore();
 
-    canvas.save();
-    canvas.translate(previewX!, spawnY);
-    FruitPainter.draw(canvas, nextFruit, nextFruit.radius,
-        opacity: _ready ? 0.5 : 0.2);
-    canvas.restore();
+      final linePaint = Paint()
+        ..color = const Color(0x44FF6600)
+        ..strokeWidth = 0.05;
+      canvas.drawLine(
+        Offset(previewX!, spawnY + BombBody.radius),
+        Offset(previewX!, ContainerWall.height / 2),
+        linePaint,
+      );
+    } else {
+      final spawnY = -ContainerWall.height / 2 - nextFruit.radius - 0.5;
+      canvas.save();
+      canvas.translate(previewX!, spawnY);
+      FruitPainter.draw(canvas, nextFruit, nextFruit.radius,
+          opacity: _ready ? 0.5 : 0.2);
+      canvas.restore();
 
-    // Drop guide line
-    final linePaint = Paint()
-      ..color = const Color(0x22FFFFFF)
-      ..strokeWidth = 0.05;
-    canvas.drawLine(
-      Offset(previewX!, spawnY + nextFruit.radius),
-      Offset(previewX!, ContainerWall.height / 2),
-      linePaint,
-    );
+      final linePaint = Paint()
+        ..color = const Color(0x22FFFFFF)
+        ..strokeWidth = 0.05;
+      canvas.drawLine(
+        Offset(previewX!, spawnY + nextFruit.radius),
+        Offset(previewX!, ContainerWall.height / 2),
+        linePaint,
+      );
+    }
   }
 }
